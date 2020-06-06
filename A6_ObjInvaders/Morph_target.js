@@ -1,3 +1,4 @@
+console.log("init morph_tarjet.js");
 var renderer = null, 
 scene = null,raycaster,
 camera = null,
@@ -17,10 +18,11 @@ var robots = [];
 var score = 0;
 var duration = 20000; // ms
 var currentTime = Date.now();
-var x_max = 100;
-var x_min =-100;
+var x_max = 50;
+var x_min =-50;
 var max_num_robots = 25;
 var animation = "idle";
+
 
 function initAnimations() 
 {
@@ -31,10 +33,10 @@ function initAnimations()
                 { 
                     keys:[0, .30, .60, 1], 
                     values:[
-                            { x: 0, y : 0, z : 0 },
-                            { x:-Math.PI/6, y : Math.PI/7, z : 0 },
-                            { x:-Math.PI/6 * 2, y : Math.PI/7 *2, z : 0},
-                            { x:-Math.PI/6 * 3, y : Math.PI/7 *3, z : 0 },
+                            { x: Math.PI, y : Math.PI, z : 0 },
+                            { x:Math.PI/6, y : -Math.PI/7, z : 0 },
+                            { x:Math.PI/6 * 2, y : -Math.PI/7 *2, z : 0},
+                            { x:Math.PI/6 * 3, y : -Math.PI/7 *3, z : 0 },
                             ],
                 },
             ],
@@ -64,8 +66,8 @@ function startGame()
     score = 0;
     names = 0;
     robotsSpawned = 0;
-    document.getElementById("time").innerHTML = 120 + " seg.";
-    document.getElementById("score").innerHTML = "score: " + score + ".";
+    document.getElementById("time").innerHTML = 60 + " seg.";
+    document.getElementById("score").innerHTML = "puntaje: " + score + ".";
     document.getElementById("startButton").style.display="none";
     document.getElementById("startButton").disabled = true;
     
@@ -79,18 +81,13 @@ function changeAnimation(animation_text)
 
     if(animation =="dead")
     {
-        createDeadAnimation();
     }
     else
     {
-        robot_idle.rotation.x = 0;
+        robot_idle.rotation.x = Math.PI;
     }
 }
 
-function createDeadAnimation()
-{
-
-}
 
 function loadFBX()
 {
@@ -102,6 +99,7 @@ function loadFBX()
         object.mixer = new THREE.AnimationMixer( scene );
         var action = object.mixer.clipAction( object.animations[ 0 ], object );
         object.scale.set(0.02, 0.02, 0.02);
+        object.rotation.set(Math.PI,Math.PI,0);
         object.position.set(Math.random() * (x_max - x_min) + x_min, -100, -300);
         action.play();
         object.traverse( function ( child ) {
@@ -110,25 +108,26 @@ function loadFBX()
                 child.receiveShadow = true;
             }
         } );
-        dancer = object;
-        robots.push(dancer);
+        robot = object;
+        robots.push(robot);
         scene.add( object );
         createDeadAnimation();
 
     } );
 }
-function clone (i)
+function clone (name)
 {
-    var newDancer = cloneFbx(dancer);
-    newDancer.position.set(Math.random() * (x_max - x_min) + x_min, -4, -100);        
-    newDancer.mixer =  new THREE.AnimationMixer( scene );
-    var action = newDancer.mixer.clipAction( newDancer.animations[ 0 ], newDancer );
+    var newRobot = cloneFbx(robot);
+    newRobot.position.set(Math.random() * (x_max - x_min) + x_min, -4, -100);
+    newRobot.rotation.set(Math.PI,Math.PI,0);
+    newRobot.mixer =  new THREE.AnimationMixer(scene);
+    var action = newRobot.mixer.clipAction( newRobot.animations[ 0 ], newRobot );
     action.play();
-    newDancer.name = i;
-    newDancer.living = 1;
-    newDancer.dead = 0;
-    robots.push(newDancer);
-    scene.add(newDancer);
+    newRobot.name = name;
+    newRobot.living = 1;
+    newRobot.dead = 0;
+    robots.push(newRobot);
+    scene.add(newRobot);
 }
 
 function animate() {
@@ -141,7 +140,7 @@ function animate() {
     var seconds = (now - actualTime)/1000
 
 
-    if (seconds >= 1.5 )
+    if (seconds >= 0.5 )
     {
         if ( counter < max_num_robots) 
         {
@@ -154,35 +153,37 @@ function animate() {
 
     if ( robots.length > 0) 
     {
-        for(dancer_i of robots)
+        for(robot_i of robots)
         {
-            if(dancer_i.living==1)
+            if(robot_i.living==1)
             {
-                dancer_i.lookAt(camera.position);
-                dancer_i.translateZ(.1);
-                dancer_i.position.y = -4 ;   
-                dancer_i.mixer.update( ( deltat ) * 0.001 );        
+                robot_i.lookAt(camera.position);
+                robot_i.translateZ(.1);
+                robot_i.position.y = -4 ;   
+                robot_i.mixer.update( ( deltat ) * 0.001 );
+                robot_i.rotation.x = Math.PI;
+                robot_i.rotation.y = Math.PI;
 
             } 
-            else if (dancer_i.living==0) 
+            else if (robot_i.living==0) 
             {
-                var seconds2 = (now - dancer_i.dead)/1000
+                var seconds2 = (now - robot_i.dead)/1000
                 if (seconds2 >= 1 )
                 {
                     score ++;
-                    document.getElementById("score").innerHTML = "score: " +score;
-                    dancer_i.position.set(Math.random() * (x_max - x_min) + x_min, -4, -100);
-                    dancer_i.rotation.set(0,0,0);  
-                    dancer_i.mixer.update( ( deltat ) * 0.001 ); 
-                    dancer_i.living=1; 
+                    document.getElementById("score").innerHTML = "puntaje: " +score;
+                    robot_i.position.set(Math.random() * (x_max - x_min) + x_min, -4, -100);
+                    
+                    robot_i.mixer.update( ( deltat ) * 0.001 ); 
+                    robot_i.living=1; 
                 }
                 
             }
-            if(dancer_i.position.z >= camera.position.z-5)
+            if(robot_i.position.z >= camera.position.z-5)
             {  
                     score --;
-                    dancer_i.position.set(Math.random() * 100 - 10, -4, -100); 
-                    dancer_i.mixer.update( ( deltat ) * 0.001 ); 
+                    robot_i.position.set(Math.random() * 100 - 10, -4, -100); 
+                    robot_i.mixer.update( ( deltat ) * 0.001 ); 
                     document.getElementById("score").innerHTML = "score: " +score;
                 
             }
@@ -193,15 +194,15 @@ function animate() {
     {
         gameStarted = now;
         minutes_left+=1;
-        document.getElementById("time").innerHTML = 120-minutes_left+ " seg";
-        if(minutes_left==120)
+        document.getElementById("time").innerHTML = 60-minutes_left+ " seg";
+        if(minutes_left==60)
         {
             document.getElementById("startButton").style.display="block";
             document.getElementById("startButton").disabled = false;
             game=false;
-            for(dancer_i of robots)
+            for(robot_i of robots)
             {
-                scene.remove(dancer_i); 
+                scene.remove(robot_i); 
 
             }
             robots.splice(1, robots.length-1)
@@ -256,7 +257,7 @@ function createScene(canvas) {
     // camera.position.set(0, 150, 180);
     camera.position.set(0, 3, 95);
 
-    camera.rotation.set(0,0,0);
+    //camera.rotation.set(0,0,0);
     scene.add(camera);
 
         
@@ -264,19 +265,19 @@ function createScene(canvas) {
     root = new THREE.Object3D;
     
     // Add a directional light to show off the object
-    directionalLight = new THREE.DirectionalLight( 0xffffff, 0.5);
+    directionalLight = new THREE.DirectionalLight( 0xffffff, 1);
 
     // Create and add all the lights
     directionalLight.position.set(-15, 0, -10);
+    directionalLight.castShadow = true;
     directionalLight.rotation.x = Math.PI/2;
     directionalLight.rotation.z = 90 * Math.PI / 180;
     
     root.add(directionalLight);
 
-    ambientLight = new THREE.AmbientLight ( 0x888888 );
+    ambientLight = new THREE.AmbientLight ( 0xffffff, 0.8);
     root.add(ambientLight);
-
-    loadFBX();    
+    loadFBX();
 
     // Create a group to hold the objects
     group = new THREE.Object3D;
@@ -293,13 +294,13 @@ function createScene(canvas) {
     geometry = new THREE.PlaneGeometry(200, 200, 50, 50);
     var mesh = new THREE.Mesh(geometry, new THREE.MeshPhongMaterial({color:color, map:map, side:THREE.DoubleSide}));
 
-    mesh.rotation.x = -Math.PI / 2;
-    mesh.position.y = -4.02;
+    mesh.rotation.x = Math.PI / 2;
+    mesh.position.y = -7.02;
     
     // Add the mesh to our group
-    group.add( mesh );
     mesh.castShadow = false;
     mesh.receiveShadow = true;
+    group.add( mesh );
     // Now add the group to our scene
     scene.add( root );
 
@@ -336,6 +337,7 @@ function onDocumentMouseDown(event)
         {
             for(var i = 0; i<= animator.interps.length -1; i++)
             {
+                console.log("rotation", robots[CLICKED.parent.name].rotation);
                 animator.interps[i].target = robots[CLICKED.parent.name].rotation;
                 robots[CLICKED.parent.name].living = 0;
                 robots[CLICKED.parent.name].dead = Date.now();
