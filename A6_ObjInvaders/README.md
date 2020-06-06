@@ -22,3 +22,10 @@ Based on the Class demos, create a 3D [zerg rush](https://elgoog.im/zergrush/) s
 - UI feedback messages (to start or restart the game) were correctly displayed.
 
 **Deadline:** 08/05/2020
+
+**Grade:** 50
+
+- No hay interacción con los objetos.
+- No hay score, timer, ni opción de reiniciar.
+- Falta la lógica del juego.
+- No está la animación adicional de muerte.
